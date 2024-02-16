@@ -48,8 +48,7 @@
 
 <script>
     document.getElementById("modalBody");
-
-    async function main(){
+    async function main() {
         const response = await fetch(`${baseApi}/static/test.json`);
         const json = await response.json();
         await acceptTermsOfUse(json.terms_of_use);

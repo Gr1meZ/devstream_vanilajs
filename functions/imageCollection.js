@@ -1,97 +1,104 @@
-async function renderImageToCanvas(imageUrl) {
+const renderImageToCanvas = async (imageUrl) => {
     await timeout(500);
     const image = new Image();
     image.src = imageUrl;
     image.crossOrigin = "anonymous";
-    image.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
 
-        canvas.id = "CursorLayer";
-        canvas.style.zIndex = 8;
-        canvas.style.position = "static";
+    return new Promise((resolve, reject) => {
+        image.onload = () => {
+            const canvasObj = createCanvas();
 
-        canvas.width = 500;
-        canvas.height = 500;
+            drawImage(image, canvasObj.canvas, canvasObj.ctx);
 
-        drawImage(image, canvas, ctx);
-        const card = createCard(canvas, imageUrl);
-        createColumn(card);
-    };
-
-    image.onerror = () => {
-        console.log('failed load image')
-    };
+            const card = createCard(canvasObj.canvas, imageUrl);
+            renderColumn(card);
+            resolve();
+        };
+        image.onerror = () => {
+            console.log('failed load image')
+            reject();
+        };
+    })
 }
 
-async function showImageCollection(images) {
+const showImageCollection = async (images) => {
     for (let imageUrl of images) {
         console.log(images)
         await renderImageToCanvas(`${baseApi}${imageUrl.image_url}`);
     }
 }
 
-function drawImage(img, canvas, ctx){
-    var MAX_WIDTH = 300;
-    var MAX_HEIGHT = 300;
+const drawImage = (img, canvas, ctx) => {
+    const MAX_WIDTH = 300;
+    const MAX_HEIGHT = 300;
 
-    var width = img.width;
-    var height = img.height;
+    let width = img.width;
+    let height = img.height;
 
-    if (width > height) {
-        if (width > MAX_WIDTH) {
-            height = height * (MAX_WIDTH / width);
-            width = MAX_WIDTH;
-        }
-    } else {
-        if (height > MAX_HEIGHT) {
-            width = width * (MAX_HEIGHT / height);
-            height = MAX_HEIGHT;
-        }
+    if (width > height && width > MAX_WIDTH) {
+        height = height * (MAX_WIDTH / width);
+        width = MAX_WIDTH;
+    } else if (height > MAX_HEIGHT) {
+        width = width * (MAX_HEIGHT / height);
+        height = MAX_HEIGHT;
     }
+
     canvas.width = width;
     canvas.height = height;
     ctx.drawImage(img, 0, 0, width, height);
 }
 
-function createColumn(card){
+const renderColumn = (card) => {
     const column = document.createElement("div");
     column.classList.add("col", "container-canvas");
-    const imageContainer = document.getElementById("imagesContainer");
     column.appendChild(card);
+
+    const imageContainer = document.getElementById("imagesContainer");
     imageContainer.appendChild(column);
 }
-function createCard(canvas, imageUrl){
+
+const createCard = (canvas, imageUrl) => {
     canvas.classList.add("card-img-top");
-    var divCard = document.createElement("div");
+
+    const divBody = document.createElement("div");
+    divBody.classList = "card-body";
+
+    const divCard = document.createElement("div");
     divCard.classList.add("card");
     divCard.style.width = "18rem";
     divCard.appendChild(canvas);
-    var divBody = document.createElement("div");
-    divBody.classList = "card-body";
     divCard.appendChild(divBody);
 
-    var downloadLink = document.createElement("a");
-    downloadLink.classList.add("btn", "btn-success");
-
-    fetch(imageUrl).then(function(response) {
+    fetch(imageUrl).then(function (response) {
         return response.blob();
-    }).then(function(myBlob) {
-        var objectURL = URL.createObjectURL(myBlob);
-        downloadLink.href = objectURL;
-        downloadLink.download = imageUrl.substring(imageUrl.lastIndexOf('/')+1);
+    }).then(function (myBlob) {
+        const downloadLink = document.createElement("a");
+        downloadLink.classList.add("btn", "btn-success");
+
+        downloadLink.href = URL.createObjectURL(myBlob);
+        downloadLink.download = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
         downloadLink.text = "Download";
+
         divBody.appendChild(downloadLink);
     });
 
     return divCard;
 }
 
-function download(text, name, type) {
-    var a = document.getElementById("a");
-
+const timeout = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+const createCanvas = () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.id = "CursorLayer";
+    canvas.style.zIndex = 8;
+    canvas.style.position = "static";
+
+    canvas.width = 500;
+    canvas.height = 500;
+
+    return {canvas, ctx};
 }

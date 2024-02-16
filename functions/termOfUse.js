@@ -1,7 +1,7 @@
 async function acceptTermsOfUse(termsOfUse) {
-    var myModal = new bootstrap.Modal(document.getElementById("modal"), {});
+    const myModal = new bootstrap.Modal(document.getElementById("modal"), {});
 
-    let modalContentDiv = document.createElement("div");
+    const modalContentDiv = document.createElement("div");
 
     termsOfUse.paragraphs.sort((a, b) => a.index - b.index);
 
@@ -16,15 +16,16 @@ async function acceptTermsOfUse(termsOfUse) {
         modalContentDiv.appendChild(title);
         modalContentDiv.appendChild(content);
     }
-    var checkbox = document.getElementById("agreeCheckBox");
-    var acceptBtn = document.getElementById("acceptBtn");
-    var clsBtn = document.getElementById("clsBtn");
+
+    const checkbox = document.getElementById("agreeCheckBox");
+    const acceptBtn = document.getElementById("acceptBtn");
+    const clsBtn = document.getElementById("clsBtn");
 
     checkbox.addEventListener("change", (event) => {
         acceptBtn.disabled = !event.currentTarget.checked;
     });
 
-    var modalBody = document.getElementById("modalBody");
+    const modalBody = document.getElementById("modalBody");
     modalBody.appendChild(modalContentDiv);
     myModal.show();
 
